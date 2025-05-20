@@ -1,24 +1,20 @@
 from fastapi import FastAPI, Depends, HTTPException, Header, Request
-from datetime import datetime, timedelta
+from datetime import datetime
 import ollama
-import os
 from dotenv import load_dotenv
 from http import HTTPStatus
 from typing import Dict
-import pytz
 import re
+
+from src.constants.defaults import TIMEZONE, MAX_CREDITS
+from src.constants.secrets import API_KEY, OLLAMA_SERVER_URL, MODEL_ID
 
 load_dotenv()
 
-ollamaServer = os.getenv("OLLAMA_SERVER_URL") or ""
-model = os.getenv("OLLAMA_MODEL_ID") or ""
-
 CREDITS : Dict[str, Dict] = {}
-MAX_CREDITS = 3
-TIMEZONE = pytz.timezone("UTC")
 
 app = FastAPI()
-client = ollama.Client(ollamaServer)
+client = ollama.Client(OLLAMA_SERVER_URL)
 
 def get_today_key() -> str:
     today = datetime.now(TIMEZONE).date()
@@ -41,11 +37,10 @@ def verify_Api_key(request: Request, x_api_key: str = Header(None)) -> str:
     if x_api_key is None:
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Please provide api key")
     
-    if x_api_key != os.getenv("API_KEY"):
+    if x_api_key != API_KEY:
         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Invalid api key")
     
     credit_info = CREDITS.get(ip, None)
-    print(credit_info)
 
     if credit_info is None or credit_info["credits"] <= 0:
         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="No credits left! Please add credits before query.")
@@ -56,7 +51,7 @@ def verify_Api_key(request: Request, x_api_key: str = Header(None)) -> str:
 def generate(prompt: str, ip: str = Depends(verify_Api_key)):
     CREDITS[ip]["credits"] -= 1
     
-    response = client.chat(model=model, messages=[{"role": "user", "content": prompt}])
+    response = client.chat(model=MODEL_ID, messages=[{"role": "user", "content": prompt}])
     content = response["message"]["content"]
 
     formattedContent = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
@@ -67,7 +62,7 @@ async def get_credits(request: Request, x_api_key: str = Header(None)):
     if x_api_key is None:
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Please provide api key")
     
-    if x_api_key != os.getenv("API_KEY"):
+    if x_api_key != API_KEY:
         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Invalid api key")
     
     ip = get_client_ip(request=request)
