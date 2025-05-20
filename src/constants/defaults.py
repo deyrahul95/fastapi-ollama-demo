@@ -1,4 +1,4 @@
 import pytz
 
-MAX_CREDITS: int = 3
+MAX_CREDITS: int = 10
 TIMEZONE = pytz.timezone("UTC")

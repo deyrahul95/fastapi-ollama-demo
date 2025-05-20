@@ -7,7 +7,7 @@ from src.constants.defaults import MAX_CREDITS, TIMEZONE
 
 
 class CreditInfo(TypedDict):
-    credits: int
+    credits: float
     last_reset: str
 
 
@@ -39,7 +39,7 @@ class CreditService:
 
         return True
 
-    def credit_used(self, ip: str) -> None:
+    def credit_used(self, ip: str, tokens: int) -> None:
         """
         Decrease the credit count for a given IP.
 
@@ -47,9 +47,10 @@ class CreditService:
             ip (str): The IP address using a credit.
         """
         if ip in self._credits:
-            self._credits[ip]["credits"] -= 1
+            used_credit = tokens / 100
+            self._credits[ip]["credits"] -= used_credit
 
-    def get_remaining_credits(self, ip: str) -> int:
+    def get_remaining_credits(self, ip: str) -> float:
         """
         Get the number of remaining credits for a given IP.
 
