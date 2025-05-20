@@ -1,11 +1,13 @@
 import ollama
+import os
+from dotenv import load_dotenv
 
-ollamaServer = "https://arabic-oct-glossary-recent.trycloudflare.com"
+load_dotenv()
+
+ollamaServer = os.getenv("OLLAMA_SERVER_URL") or ""
+model = os.getenv("OLLAMA_MODEL_ID") or ""
 
 client = ollama.Client(ollamaServer)
-
-model = "gemma3:1b"
-prompt = "what is Python?"
 
 while True:
     print("----------------------Prompt---------------------")

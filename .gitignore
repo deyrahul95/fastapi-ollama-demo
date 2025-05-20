@@ -11,3 +11,9 @@ wheels/
 
 # ide
 .vscode/
+
+# env
+.env
+.env.local
+.env.test
+.env.prod
