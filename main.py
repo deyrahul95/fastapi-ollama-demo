@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from http import HTTPStatus
 from typing import Dict
 import pytz
+import re
 
 load_dotenv()
 
@@ -34,7 +35,7 @@ def reset_credits(ip: str):
     elif CREDITS[ip]["last_reset"] != today_key:
         CREDITS[ip] = {"credits": MAX_CREDITS, "last_reset": today_key}
 
-def verify_Api_key(request: Request, x_api_key: str = Header(None)):
+def verify_Api_key(request: Request, x_api_key: str = Header(None)) -> str:
     ip = get_client_ip(request=request)
 
     if x_api_key is None:
@@ -56,7 +57,10 @@ def generate(prompt: str, ip: str = Depends(verify_Api_key)):
     CREDITS[ip]["credits"] -= 1
     
     response = client.chat(model=model, messages=[{"role": "user", "content": prompt}])
-    return {"response": response["message"]["content"]}
+    content = response["message"]["content"]
+
+    formattedContent = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+    return {"response": formattedContent.strip()}
 
 @app.get("/credits")
 async def get_credits(request: Request, x_api_key: str = Header(None)):
