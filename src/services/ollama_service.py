@@ -1,4 +1,3 @@
-from fastapi import Depends
 import ollama
 import re
 
@@ -13,15 +12,14 @@ class OllamaService:
         self.model_url = model_url
         self.model_id = model_id
         self.client = ollama.Client(model_url)
+        self.cache_service = CacheService()
 
-    def chat(
-        self, query: str, cacheService: CacheService = Depends(CacheService)
-    ) -> str:
+    def chat(self, query: str) -> str:
         """
         Method to send a query to the Ollama model.
         """
         try:
-            cached_response = cacheService.get_cached_response(query=query)
+            cached_response = self.cache_service.get_cached_response(query=query)
             if cached_response:
                 return cached_response
 
@@ -33,7 +31,7 @@ class OllamaService:
             formattedContent = re.sub(
                 r"<think>.*?</think>", "", content, flags=re.DOTALL
             ).strip()
-            cacheService.set_cache(query=query, response=formattedContent)
+            self.cache_service.set_cache(query=query, response=formattedContent)
 
             return formattedContent
         except Exception as e:
