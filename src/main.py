@@ -1,9 +1,6 @@
 from fastapi import FastAPI
-from dotenv import load_dotenv
 
 from src.routes import ollama_route
-
-load_dotenv()
 
 app = FastAPI()
 

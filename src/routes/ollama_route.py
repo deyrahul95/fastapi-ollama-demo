@@ -11,21 +11,29 @@ router = APIRouter(prefix="/ollama", tags=["Ollama"])
 
 ollama_service = OllamaService(model_url=OLLAMA_SERVER_URL, model_id=MODEL_ID)
 
+
 @router.post("/generate", status_code=HTTPStatus.OK)
-def generate(prompt: str, _ = Depends(verify_Api_key), 
-            ip: str = Depends(get_client_ip), 
-            creditService: CreditService = Depends(CreditService)):
+def generate(
+    prompt: str,
+    _=Depends(verify_Api_key),
+    ip: str = Depends(get_client_ip),
+    creditService: CreditService = Depends(CreditService),
+):
     creditService.verify_credits(ip=ip)
-    
+
     response = ollama_service.chat(query=prompt)
     tokens = len(response.split(" "))
-    creditService.credit_used(ip=ip,tokens=tokens)
+    creditService.credit_used(ip=ip, tokens=tokens)
 
     return {"response": response}
 
-@router.get("/credits", status_code=HTTPStatus.OK)
-async def get_credits(_ = Depends(verify_Api_key), ip: str = Depends(get_client_ip), authService: CreditService = Depends(CreditService)):
-    authService.reset_credits(ip=ip)
-    
-    return {"remaining_credits": round(authService.get_remaining_credits(ip=ip), 2)}
 
+@router.get("/credits", status_code=HTTPStatus.OK)
+async def get_credits(
+    _=Depends(verify_Api_key),
+    ip: str = Depends(get_client_ip),
+    authService: CreditService = Depends(CreditService),
+):
+    authService.reset_credits(ip=ip)
+
+    return {"remaining_credits": round(authService.get_remaining_credits(ip=ip), 2)}
