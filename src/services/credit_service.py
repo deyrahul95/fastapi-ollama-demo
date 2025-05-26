@@ -34,7 +34,7 @@ class CreditService:
         if credit_info is None or credit_info["credits"] <= 0:
             raise HTTPException(
                 status_code=HTTPStatus.FORBIDDEN,
-                detail="No credits left! Please add credits before query."
+                detail="No credits left! Please add credits before query.",
             )
 
         return True

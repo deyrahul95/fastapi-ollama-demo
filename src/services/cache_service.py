@@ -40,8 +40,8 @@ class CacheService:
         cached_data = self._cache.get(cache_key)
 
         if cached_data:
-            if time.time() - cached_data['timestamp'] < self.CACHE_TTL:
-                return cached_data['response']
+            if time.time() - cached_data["timestamp"] < self.CACHE_TTL:
+                return cached_data["response"]
 
         return None
 
@@ -54,7 +54,4 @@ class CacheService:
             response (str): The response to cache.
         """
         cache_key = self.generate_cache_key(query)
-        self._cache[cache_key] = {
-            "response": response,
-            "timestamp": time.time()
-        }
+        self._cache[cache_key] = {"response": response, "timestamp": time.time()}
